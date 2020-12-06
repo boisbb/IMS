@@ -164,10 +164,14 @@ int main(int argc, char *argv[]) {
     study_header(false);
     for (auto i = percentage.begin(); i != percentage.end(); ++i){
       string perc = (*i == 0.02 ? "2.0" : (*i == 0.015 ? "1.5" : (*i == 0.01 ? "1.0" : (*i == 0.005 ? "0.5" : "0.1"))));
-      study_line(perc + "%", to_string(14), study(14, 0.5, false, 75, *i, 0.3, 1), study(14, 0.5, false, 348, *i, 0.3, 1),
-                                            study(14, 0.5, false, 100, *i, 0.3, 1), study(14, 0.5, false, 150, *i, 0.3, 1));
-      study_line(perc + "%", to_string(48), study(48, 0.5, false, 75, *i, 0.3, 1), study(48, 0.5, false, 348, *i, 0.3, 1),
-                                            study(48, 0.5, false, 100, *i, 0.3, 1), study(48, 0.5, false, 150, *i, 0.3, 1));
+      study_line(perc + "%", to_string(14), study(14, 0.5, false, 75, *i, 0.3, 1), study(14, 2.0, false, 348, *i, 0.3, 1),
+                                            study(14, 4.0, false, 100, *i, 0.3, 1), study(14, 8.0, false, 150, *i, 0.3, 1));
+    }
+    line(81, '=');
+    for (auto i = percentage.begin(); i != percentage.end(); ++i){
+      string perc = (*i == 0.02 ? "2.0" : (*i == 0.015 ? "1.5" : (*i == 0.01 ? "1.0" : (*i == 0.005 ? "0.5" : "0.1"))));
+      study_line(perc + "%", to_string(48), study(48, 0.5, false, 75, *i, 0.3, 1), study(48, 2.0, false, 348, *i, 0.3, 1),
+                                            study(48, 4.0, false, 100, *i, 0.3, 1), study(48, 8.0, false, 150, *i, 0.3, 1));
     }
 
     cout << endl;
@@ -176,10 +180,14 @@ int main(int argc, char *argv[]) {
     study_header(true);
     for (auto i = percentage.begin(); i != percentage.end(); ++i){
       string perc = (*i == 0.02 ? "2.0" : (*i == 0.015 ? "1.5" : (*i == 0.01 ? "1.0" : (*i == 0.005 ? "0.5" : "0.1"))));
-      study_line(perc + "%", to_string(14), study(14, 0.5, true, 75, *i, 0.3, 1), study(14, 0.5, true, 348, *i, 0.3, 1),
-                                            study(14, 0.5, true, 100, *i, 0.3, 1), study(14, 0.5, true, 150, *i, 0.3, 1));
-      study_line(perc + "%", to_string(48), study(48, 0.5, true, 75, *i, 0.3, 1), study(48, 0.5, true, 348, *i, 0.3, 1),
-                                            study(48, 0.5, true, 100, *i, 0.3, 1), study(48, 0.5, true, 150, *i, 0.3, 1));
+      study_line(perc + "%", to_string(14), study(14, 0.5, true, 75, *i, 0.3, 1), study(14, 2.0, true, 348, *i, 0.3, 1),
+                                            study(14, 4.0, true, 100, *i, 0.3, 1), study(14, 8.0, true, 150, *i, 0.3, 1));
+    }
+    line(81, '=');
+    for (auto i = percentage.begin(); i != percentage.end(); ++i){
+      string perc = (*i == 0.02 ? "2.0" : (*i == 0.015 ? "1.5" : (*i == 0.01 ? "1.0" : (*i == 0.005 ? "0.5" : "0.1"))));
+      study_line(perc + "%", to_string(48), study(48, 0.5, true, 75, *i, 0.3, 1), study(48, 2.0, true, 348, *i, 0.3, 1),
+                                          study(48, 4.0, true, 100, *i, 0.3, 1), study(48, 8.0, true, 150, *i, 0.3, 1));
     }
   }
   else{
