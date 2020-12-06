@@ -5,8 +5,10 @@
 #include <string.h>
 #include <string>
 #include <math.h>
+#include <cmath>
 using namespace std;
 
+double cnt_infected(double susceptible, double q, double p, double t, double Q, double infected, bool masks);
 double study(double q, double t, bool masks, double volume, double percentage, double p, double infected);
 double ach(double Q, double volume);
 void line(int count, char character);
@@ -19,19 +21,23 @@ double wells_riley(int infected, double p, double Q, double q, double t, bool ma
 int main(int argc, char *argv[]) {
   int opt;
   bool masks = false;
-  int infected = 0;
+  int infected = 1;
   double p = 0.3;
   double Q = 0.0;
-  double q = 0.0;
-  double t = 0.0;
+  double q = 14.0;
+  double t = 1.0;
   int i = 0;
   bool one_percent = false;
   double volume = 0.0;
   bool normal = false;
   bool study_results = false;
   double percentage = 0.01;
+  bool count_infected = true;
+  int susceptible = 0;
+  double result = 0.0;
 
-  while((opt = getopt(argc, argv, "v:i:p:Q:q:t:-:m")) != -1){
+
+  while((opt = getopt(argc, argv, "s:v:i:p:Q:q:t:-:m")) != -1){
     if (i == 0){
       switch (opt){
 
@@ -45,8 +51,11 @@ int main(int argc, char *argv[]) {
           else if (!strcmp(optarg, "study-results")) {
             study_results = true;
           }
+          else if (!strcmp(optarg, "infected-count")){
+            count_infected = true;
+          }
           else{
-            cerr << "ERROR: Unknown argument " << optarg << endl;
+            cerr << "ERROR: Unknown argumensst " << optarg << endl;
             return 2;
           }
           break;
@@ -57,37 +66,7 @@ int main(int argc, char *argv[]) {
       i++;
       continue;
     }
-    if (one_percent) {
-      int random;
-      switch (opt) {
-        case 'v':
-          volume = atof(optarg);
-          break;
-        case 'i':
-          infected = atoi(optarg);
-          break;
-        case 'm':
-          masks = true;
-          break;
-        case 'p':
-          percentage = atof(optarg);
-          percentage /= 100;
-          cout << percentage << endl;
-        case 't':
-          t = atof(optarg);
-          break;
-        case 'q':
-          q = atoi(optarg);
-          break;
-        case ':':
-          fprintf(stderr, "Missing option. %s\n", optarg);
-          return 2;
-        case '?':
-          fprintf(stderr, "Unknown argument: %c\n", optopt);
-          return 2;
-      }
-    }
-    else if(study_results){
+    if(study_results){
       break;
     }
     else{
@@ -107,6 +86,22 @@ int main(int argc, char *argv[]) {
         case 'm':
           masks = true;
           break;
+        case 'p':
+          if (!one_percent) {
+            fprintf(stderr, "Invalid argument combination.\n");
+            return 1;
+          }
+          percentage = atof(optarg);
+          percentage /= 100;
+          cout << percentage << endl;
+          break;
+        case 's':
+          if (!count_infected) {
+            fprintf(stderr, "Invalid argument combination.\n");
+            return 1;
+          }
+          susceptible = atoi(optarg);
+          break;
         case ':':
           fprintf(stderr, "Missing option. %s\n", optarg);
           return 2;
@@ -118,6 +113,7 @@ int main(int argc, char *argv[]) {
 
     i++;
   }
+
   if (one_percent) {
     cout << "Calculating ideal (0-1%) conditions of probability of infection risk." << endl;
     cout << "Volume: " << volume << endl;
@@ -126,19 +122,6 @@ int main(int argc, char *argv[]) {
     cout << "Quantum generation rate per infecter (q): " << q << endl;
     cout << "Time (t): " << t << endl;
 
-  }
-  else if(normal){
-    cout << "Calculating for:" << endl;
-    cout << "Number of infected (I): " << infected << endl;
-    cout << "Pulmonary rate (p): " << p << endl;
-    cout << "Room ventilation rate (Q): " << Q << endl;
-    cout << "Quantum generation rate per infecter (q): " << q << endl;
-    cout << "Time (t): " << t << endl;
-  }
-
-  double result = 0.0;
-
-  if (one_percent) {
     if (q == 0.0) {
       cout << "Quantum generation rate not entered, using two values 14 and 48." << endl;
       q = 14.0;
@@ -190,7 +173,18 @@ int main(int argc, char *argv[]) {
                                           study(48, 4.0, true, 100, *i, 0.3, 1), study(48, 8.0, true, 150, *i, 0.3, 1));
     }
   }
+  else if (count_infected) {
+    /* code */
+    result = cnt_infected(susceptible, q, 0.3, t, Q, infected, masks);
+    cout << "Number of infected: " << round(result) << endl;
+  }
   else{
+    cout << "Calculating for:" << endl;
+    cout << "Number of infected (I): " << infected << endl;
+    cout << "Pulmonary rate (p): " << p << endl;
+    cout << "Room ventilation rate (Q): " << Q << endl;
+    cout << "Quantum generation rate per infecter (q): " << q << endl;
+    cout << "Time (t): " << t << endl;
     // wellsRiley = wells_riley(1, 0.3, 1200, 14, 3);
     cout << "Without masks." << endl;
     result = wells_riley(infected, p, Q, q, t, masks);
@@ -203,6 +197,15 @@ int main(int argc, char *argv[]) {
 
 double study(double q, double t, bool masks, double volume, double percentage, double p, double infected){
   return ach(ideal_ventilation(infected, p, q, t, masks, percentage), volume);
+}
+
+double cnt_infected(double susceptible, double q, double p, double t, double Q, double infected, bool masks){
+  if (masks) {
+    return susceptible * (1 - exp(-((infected * q * p * q * t) * (1-0.5) * (1-0.5)) / Q));
+  }
+  else{
+    return susceptible * (1 - exp(-(infected * q * p * q * t) / Q));
+  }
 }
 
 /*
