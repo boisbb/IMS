@@ -6,5 +6,5 @@ all: model
 model: model.cpp
 	$(CC) model.cpp $(CFLAGS) -o model
 
-run_study:
-	./model --study-results
+run:
+	./model $(ARGS)

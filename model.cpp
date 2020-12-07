@@ -25,15 +25,15 @@ int main(int argc, char *argv[]) {
   double p = 0.3;
   double Q = 0.0;
   double q = 14.0;
-  double t = 1.0;
+  double t = 0.25;
   int i = 0;
-  bool one_percent = false;
+  bool ventialtion_rate = false;
   double volume = 0.0;
   bool normal = false;
   bool study_results = false;
   double percentage = 0.01;
-  bool count_infected = true;
-  int susceptible = 0;
+  bool count_infected = false;
+  int susceptible = 4;
   double result = 0.0;
 
 
@@ -42,8 +42,8 @@ int main(int argc, char *argv[]) {
       switch (opt){
 
         case '-':
-          if (!strcmp(optarg, "percentage")) {
-            one_percent = true;
+          if (!strcmp(optarg, "ventilation-rate")) {
+            ventialtion_rate = true;
           }
           else if (!strcmp(optarg, "normal")) {
             normal = true;
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
           masks = true;
           break;
         case 'p':
-          if (!one_percent) {
+          if (!ventialtion_rate) {
             fprintf(stderr, "Invalid argument combination.\n");
             return 1;
           }
@@ -114,27 +114,25 @@ int main(int argc, char *argv[]) {
     i++;
   }
 
-  if (one_percent) {
+  if (ventialtion_rate) {
     cout << "Calculating ideal (0-1%) conditions of probability of infection risk." << endl;
-    cout << "Volume: " << volume << endl;
     cout << "Number of infected (I): " << infected << endl;
     cout << "Pulmonary rate (p): " << p << endl;
     cout << "Quantum generation rate per infecter (q): " << q << endl;
     cout << "Time (t): " << t << endl;
+    cout << "Desired percentage: " << p * 100 << "%" << endl;
 
-    if (q == 0.0) {
-      cout << "Quantum generation rate not entered, using two values 14 and 48." << endl;
-      q = 14.0;
-      result = ideal_ventilation(infected, p, q, t, masks, percentage);
-      cout << "Result for q = " << q << ", masks are "<< ((masks) ? "on" : "not on")  <<" is: " << result << endl;
-      q = 48.0;
-      result = ideal_ventilation(infected, p, q, t, masks, percentage);
-      cout << "Result for q = " << q << ", masks are "<< ((masks) ? "on" : "not on")  <<" is: " << result << endl;
-    }
-    else{
-      result = ideal_ventilation(infected, p, q, t, masks, percentage);
-      cout << "Result for q = " << q << ", masks are "<< ((masks) ? "on" : "not on")  <<" is: " << result << endl;
-    }
+
+
+    result = ideal_ventilation(infected, p, q, t, masks, percentage);
+
+    line(80, '=');
+    printf("|%10s|%10s|%10s|%10s|%10s|%10s|%12s|\n", "infected", "p", "q", "time", "masks", "percentage", "Q");
+    line(80, '-');
+    printf("|%10d|%10.2f|%10.2f|%10.2f|%10s|%9.4f%%|%12.0f|\n", infected, p, q, t, (masks) ? "on" : "off", percentage * 100, round(result));
+    line(80, '=');
+
+    cout << "Result for q = " << q << ", masks are "<< ((masks) ? "on" : "not on")  <<" is: " << result << endl;
   }
   else if(study_results){
     vector<double> percentage;
@@ -174,20 +172,38 @@ int main(int argc, char *argv[]) {
     }
   }
   else if (count_infected) {
-    /* code */
+    cout << "Calculating infection probability:" << endl;
+    cout << "Number of infected (I): " << infected << endl;
+    cout << "Number of susceptible (S): " << susceptible << endl;
+    cout << "Pulmonary rate (p): " << p << endl;
+    cout << "Room ventilation rate (Q): " << Q << endl;
+    cout << "Quantum generation rate per infecter (q): " << q << endl;
+    cout << "Time in hours (t): " << t << endl;
     result = cnt_infected(susceptible, q, 0.3, t, Q, infected, masks);
+
+    line(80, '=');
+    printf("|%10s|%10s|%10s|%10s|%10s|%10s|%12s|\n", "infected", "p", "Q", "q", "time", "masks", "new infected");
+    line(80, '-');
+    printf("|%10d|%10.2f|%10.2f|%10.2f|%10.2f|%10s|%12.0f|\n", infected, p, Q, q, t, (masks) ? "on" : "off", round(result));
+    line(80, '=');
+
     cout << "Number of infected: " << round(result) << endl;
   }
   else{
-    cout << "Calculating for:" << endl;
+    cout << "Calculating infection probability:" << endl;
     cout << "Number of infected (I): " << infected << endl;
     cout << "Pulmonary rate (p): " << p << endl;
     cout << "Room ventilation rate (Q): " << Q << endl;
     cout << "Quantum generation rate per infecter (q): " << q << endl;
-    cout << "Time (t): " << t << endl;
+    cout << "Time in hours (t): " << t << endl;
     // wellsRiley = wells_riley(1, 0.3, 1200, 14, 3);
-    cout << "Without masks." << endl;
     result = wells_riley(infected, p, Q, q, t, masks);
+    line(78, '=');
+    printf("|%10s|%10s|%10s|%10s|%10s|%10s|%10s|\n", "infected", "p", "Q", "q", "time", "masks", "prob");
+    line(78, '-');
+    printf("|%10d|%10.2f|%10.2f|%10.2f|%10.2f|%10s|%9.3f%%|\n", infected, p, Q, q, t, (masks) ? "on" : "off", result*100);
+    line(78, '=');
+
     cout << "Probability of infection is: " << result * 100 << "%"  << endl;
   }
 
