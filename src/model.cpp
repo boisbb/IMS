@@ -31,7 +31,6 @@ int main(int argc, char *argv[]) {
   bool study_results = false;
   bool count_infected = false;
   bool normal = false;
-  double volume = 0.0;
   double percentage = 0.01;
   int susceptible = 4;
   double result = 0.0;
