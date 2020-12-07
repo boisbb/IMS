@@ -28,19 +28,18 @@ int main(int argc, char *argv[]) {
   double t = 0.25;
   int i = 0;
   bool ventialtion_rate = false;
-  double volume = 0.0;
-  bool normal = false;
   bool study_results = false;
-  double percentage = 0.01;
   bool count_infected = false;
+  bool normal = false;
+  double volume = 0.0;
+  double percentage = 0.01;
   int susceptible = 4;
   double result = 0.0;
 
-
+  // Parsing arguments
   while((opt = getopt(argc, argv, "s:v:i:p:Q:q:t:-:m")) != -1){
     if (i == 0){
       switch (opt){
-
         case '-':
           if (!strcmp(optarg, "ventilation-rate")) {
             ventialtion_rate = true;
@@ -54,18 +53,43 @@ int main(int argc, char *argv[]) {
           else if (!strcmp(optarg, "infected-count")){
             count_infected = true;
           }
+          else if (!strcmp(optarg, "help")){
+            cout << "Model that simulates epidemic spread in confined spaces based on ventialtion rate." << endl;
+            cout << "Please run the program like so:" << endl;
+            cout << "make run ARGS=\"--ventilation-rate [-i NUMBER | -q NUMBER | -t number | -p NUMBER | -m]\"" << endl;
+            cout << "make run ARGS=\"--normal [-i NUMBER | -q NUMBER | -t number | -Q NUMBER | -m]\"" << endl;
+            cout << "make run ARGS=\"--infected-count [-i NUMBER | -q NUMBER | -t number | -s NUMBER | -m]\"" << endl;
+            cout << "make run ARGS=\"--study-results" << endl << endl;
+
+            cout << "Example runs:" << endl;
+            cout << "make run ARGS=\"--normal -i 1 -Q 1310 -q 14 -t 8 -m\"" << endl;
+            cout << "make run ARGS=\"--infected-count -s 5 -i 1 -Q 665 -q 14 -t 8\"" << endl;
+            cout << "make run ARGS=\"--ventilation-rate -i 1 -q 48 -t 3 -p 1 -m\"" << endl;
+            cout << "make run ARGS=\"--study-results\"" << endl << endl;
+
+            cout << "Arguments:" << endl;
+            cout << "-i NUMBER - number of infected" << endl;
+            cout << "-q NUMBER - quantum generation rate in h^-1" << endl;
+            cout << "-t NUMBER - time in hours" << endl;
+            cout << "-p NUMBER - percentage" << endl;
+            cout << "-Q NUMBER - ventilation rate in m^3/h" << endl;
+            cout << "-s NUMBER - number of susceptible" << endl;
+            cout << "-m NUMBER - masks switch" << endl;
+            return 0;
+          }
           else{
-            cerr << "ERROR: Unknown argumensst " << optarg << endl;
-            return 2;
+            cerr << "ERROR: Unknown argument " << optarg << endl;
+            return 1;
           }
           break;
         default:
           cerr << "ERROR: incorrect argument usage." << endl;
-          return 2;
+          return 1;
       }
       i++;
       continue;
     }
+
     if(study_results){
       break;
     }
@@ -92,6 +116,12 @@ int main(int argc, char *argv[]) {
             return 1;
           }
           percentage = atof(optarg);
+
+          if (percentage >= 100) {
+            fprintf(stderr, "Percentage cannot be higher than 100%% (or equal).\n");
+            return 1;
+          }
+
           percentage /= 100;
           cout << percentage << endl;
           break;
@@ -104,16 +134,24 @@ int main(int argc, char *argv[]) {
           break;
         case ':':
           fprintf(stderr, "Missing option. %s\n", optarg);
-          return 2;
+          return 1;
         case '?':
           fprintf(stderr, "Unknown argument: %c\n", optopt);
-          return 2;
+          return 1;
       }
     }
 
     i++;
   }
 
+  // In case no argument was entered
+  if (!study_results && !ventialtion_rate && !count_infected && !normal) {
+    cerr << "ERROR: no arguments." << endl;
+    cout << "Pleas run: "<< endl << "make run ARGS=\"--help\"" << endl;
+    return 1;
+  }
+
+  // For ventilation computing
   if (ventialtion_rate) {
     cout << "Calculating ideal (0-1%) conditions of probability of infection risk." << endl;
     cout << "Number of infected (I): " << infected << endl;
@@ -134,6 +172,7 @@ int main(int argc, char *argv[]) {
 
     cout << "Result for q = " << q << ", masks are "<< ((masks) ? "on" : "not on")  <<" is: " << result << endl;
   }
+  // Compute and output results of the table
   else if(study_results){
     vector<double> percentage;
     percentage.push_back(0.02);
@@ -171,6 +210,7 @@ int main(int argc, char *argv[]) {
                                           study(48, 4.0, true, 100, *i, 0.3, 1), study(48, 8.0, true, 150, *i, 0.3, 1));
     }
   }
+  // Count number of infected
   else if (count_infected) {
     cout << "Calculating infection probability:" << endl;
     cout << "Number of infected (I): " << infected << endl;
@@ -189,6 +229,7 @@ int main(int argc, char *argv[]) {
 
     cout << "Number of infected: " << round(result) << endl;
   }
+  // For computation of probability
   else{
     cout << "Calculating infection probability:" << endl;
     cout << "Number of infected (I): " << infected << endl;
@@ -211,10 +252,12 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+// computes ideal ventilation and ACH for values in study
 double study(double q, double t, bool masks, double volume, double percentage, double p, double infected){
   return ach(ideal_ventilation(infected, p, q, t, masks, percentage), volume);
 }
 
+// computes new infected people - this number is rounded
 double cnt_infected(double susceptible, double q, double p, double t, double Q, double infected, bool masks){
   if (masks) {
     return susceptible * (1 - exp(-((infected * q * p * q * t) * (1-0.5) * (1-0.5)) / Q));
@@ -235,6 +278,7 @@ double ach(double Q, double volume){
   return Q/volume;
 }
 
+// prints header for study-results
 void study_header(bool masks){
   printf("%5s", "");
   line(76, '=');
